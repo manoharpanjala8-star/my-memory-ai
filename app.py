@@ -1,21 +1,27 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Setup the Brain
-genai.configure(api_key="PASTE_YOUR_GOOGLE_KEY_HERE")
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Securely fetch the API key from Streamlit Secrets
+# This replaces the "PASTE_YOUR_GOOGLE_KEY_HERE" line
+try:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except KeyError:
+    st.error("API Key not found! Please add GOOGLE_API_KEY to your Streamlit Secrets.")
+    st.stop()
 
 st.title("Family Memory AI")
 
 # Upload Photo
-photo = st.file_uploader("Upload a photo of your loved one")
+photo = st.file_uploader("Upload a photo of your loved one", type=['jpg', 'png', 'jpeg'])
 if photo:
     st.image(photo, width=200)
 
 # The Conversation
 user_input = st.chat_input("Talk to them...")
 if user_input:
-    # This sends the message to the free Google Brain
+    # Sends the message to the free Google Brain
     response = model.generate_content(f"You are a kind family member. Remember our history. User says: {user_input}")
     st.write(response.text)
     
